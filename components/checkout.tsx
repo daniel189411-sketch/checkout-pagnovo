@@ -30,7 +30,7 @@ export function Checkout() {
     const form = new FormData(event.currentTarget)
     const orderId = crypto.randomUUID()
     try {
-      const response = await fetch('/api/pagnovo/create', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': orderId }, body: JSON.stringify({ name: form.get('name'), email: form.get('email'), phone: form.get('phone'), orderId }) })
+      const response = await fetch('/api/pagnovo/create', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': orderId }, body: JSON.stringify({ name: form.get('name'), email: form.get('email'), phone: form.get('phone'), document: form.get('document'), orderId }) })
       const body = await response.json()
       if (!response.ok) throw new Error(body.message || 'No fue posible iniciar el pago.')
       setPayment(body)
@@ -52,7 +52,7 @@ export function Checkout() {
         {!payment ? <form onSubmit={submit} className="flex flex-col gap-8">
           <div className="flex items-center gap-2 text-sm text-muted-foreground"><span className="text-primary">Carrito</span><span>/</span><span className="font-medium text-foreground">Información</span><span>/</span><span>Pago</span></div>
           <div className="flex flex-col gap-4"><div className="flex items-baseline justify-between gap-4"><h1 className="text-xl font-semibold">Información de contacto</h1><span className="text-sm text-muted-foreground">Pago único</span></div><Field label="Correo electrónico" name="email" type="email" autoComplete="email" placeholder="Correo electrónico" /></div>
-          <div className="flex flex-col gap-4"><h2 className="text-xl font-semibold">Datos del comprador</h2><Field label="Nombre completo" name="name" autoComplete="name" placeholder="Nombre completo" /><Field label="Teléfono" name="phone" type="tel" autoComplete="tel" placeholder="Teléfono (+52)" /></div>
+          <div className="flex flex-col gap-4"><h2 className="text-xl font-semibold">Datos del comprador</h2><Field label="Nombre completo" name="name" autoComplete="name" placeholder="Nombre completo" /><Field label="Teléfono" name="phone" type="tel" autoComplete="tel" placeholder="Teléfono (+52)" /><Field label="RFC o CURP" name="document" autoComplete="off" placeholder="RFC o CURP" /></div>
           <div className="flex flex-col gap-4"><h2 className="text-xl font-semibold">Pago</h2><p className="text-sm text-muted-foreground">Todas las transacciones son seguras y están cifradas.</p><div className="overflow-hidden rounded-lg border border-primary"><div className="flex items-center justify-between gap-4 bg-secondary px-4 py-4"><span className="font-medium">Transferencia SPEI</span><span className="rounded border border-border bg-card px-2 py-1 text-xs font-semibold">SPEI</span></div><div className="flex flex-col items-center gap-3 border-t border-primary bg-background px-6 py-6 text-center"><ShieldCheck className="size-8 text-primary" /><p className="max-w-sm text-sm leading-relaxed text-muted-foreground">Después de confirmar, recibirás una CLABE para completar tu transferencia desde cualquier banco mexicano.</p></div></div></div>
           {error && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</p>}
           <Button type="submit" size="lg" disabled={loading} className="h-14 rounded-lg text-base font-semibold">{loading ? 'Preparando tu pago…' : 'Pagar ahora · MXN $419.00'}</Button>

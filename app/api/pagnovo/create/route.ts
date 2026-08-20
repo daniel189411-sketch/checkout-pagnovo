@@ -9,20 +9,26 @@ export async function POST(request: Request) {
     const name = String(body.name ?? '').trim().slice(0, 100)
     const email = String(body.email ?? '').trim().toLowerCase().slice(0, 160)
     const phone = String(body.phone ?? '').replace(/[^0-9+]/g, '').slice(0, 16)
+    const document = String(body.document ?? '').replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 18)
     const orderId = String(body.orderId ?? request.headers.get('idempotency-key') ?? '').slice(0, 80)
 
-    if (name.length < 3 || !emailPattern.test(email) || phone.length < 10 || !orderId) {
+    if (name.length < 3 || !emailPattern.test(email) || phone.length < 10 || document.length < 10 || !orderId) {
       return NextResponse.json({ message: 'Revisa tus datos e inténtalo nuevamente.' }, { status: 400 })
     }
 
     const { response, data, traceId } = await pagnovo('/transactions/v2/purchase', {
       method: 'POST',
       body: JSON.stringify({
-        amount: 41900,
+        amount: 419,
         currency: 'MXN',
         paymentMethod: 'SPEI',
         externalId: `mxn-419-${orderId}`,
-        payer: { name, email, phone },
+        name,
+        email,
+        description: 'BetaCab - carro profesional con kit de 333 herramientas',
+        responsibleDocument: document,
+        responsibleExternalId: orderId,
+        phone,
       }),
     })
 
