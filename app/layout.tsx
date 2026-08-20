@@ -7,8 +7,8 @@ const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
 const lora = Lora({ subsets: ['latin'], variable: '--font-lora' })
 
 export const metadata: Metadata = {
-  title: 'Finaliza tu compra | Impulso',
-  description: 'Checkout seguro en México por MXN $419.00 mediante transferencia SPEI.',
+  title: 'Finaliza tu compra | BetaCab México',
+  description: 'Compra tu carro profesional BetaCab con 333 herramientas por MXN $419.00 y envío rastreado gratis.',
 }
 
 export const viewport: Viewport = {
