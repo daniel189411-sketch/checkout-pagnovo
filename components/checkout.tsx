@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { Check, ChevronDown, Clipboard, LockKeyhole, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { trackPurchase } from '@/components/meta-pixel'
 
 type Payment = { id: string; status: string; clabe: string; beneficiary?: string; reference?: string; traceId?: string }
 const finished = new Set(['PAID', 'APPROVED', 'REJECTED', 'REFUNDED', 'CANCELED', 'EXPIRED'])
@@ -12,6 +13,12 @@ export function Checkout() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (payment && ['PAID', 'APPROVED'].includes(payment.status.toUpperCase())) {
+      trackPurchase(payment.id)
+    }
+  }, [payment?.id, payment?.status])
 
   useEffect(() => {
     if (!payment || finished.has(payment.status.toUpperCase())) return

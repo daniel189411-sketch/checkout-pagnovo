@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Lora } from 'next/font/google'
+import { MetaPixel } from '@/components/meta-pixel'
 import './globals.css'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
@@ -18,5 +19,5 @@ export const viewport: Viewport = {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="es-MX" className="bg-background"><body className={`${geist.variable} ${lora.variable} font-sans antialiased`}>{children}{process.env.NODE_ENV === 'production' && <Analytics />}</body></html>
+  return <html lang="es-MX" className="bg-background"><body className={`${geist.variable} ${lora.variable} font-sans antialiased`}>{children}<MetaPixel />{process.env.NODE_ENV === 'production' && <Analytics />}</body></html>
 }
