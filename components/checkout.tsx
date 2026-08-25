@@ -13,6 +13,7 @@ export function Checkout() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
+  const [copyError, setCopyError] = useState(false)
 
   useEffect(() => {
     if (payment && ['PAID', 'APPROVED'].includes(payment.status.toUpperCase())) {
@@ -47,8 +48,27 @@ export function Checkout() {
 
   async function copyClabe() {
     if (!payment) return
-    await navigator.clipboard.writeText(payment.clabe)
-    setCopied(true); window.setTimeout(() => setCopied(false), 1800)
+    setCopyError(false)
+    try {
+      if (navigator.clipboard?.writeText && window.isSecureContext) {
+        await navigator.clipboard.writeText(payment.clabe)
+      } else {
+        const textArea = document.createElement('textarea')
+        textArea.value = payment.clabe
+        textArea.setAttribute('readonly', '')
+        textArea.style.position = 'fixed'
+        textArea.style.opacity = '0'
+        document.body.appendChild(textArea)
+        textArea.select()
+        const copiedSuccessfully = document.execCommand('copy')
+        textArea.remove()
+        if (!copiedSuccessfully) throw new Error('Copy command failed')
+      }
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 2500)
+    } catch {
+      setCopyError(true)
+    }
   }
 
   return <main className="min-h-screen bg-card text-foreground">
@@ -65,7 +85,7 @@ export function Checkout() {
           {error && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</p>}
           <Button type="submit" size="lg" disabled={loading} className="h-14 rounded-lg text-base font-semibold">{loading ? 'Preparando tu pago…' : 'Pagar ahora · MXN $419.00'}</Button>
           <FooterLinks />
-        </form> : <PaymentDetails payment={payment} copied={copied} copyClabe={copyClabe} />}
+        </form> : <PaymentDetails payment={payment} copied={copied} copyError={copyError} copyClabe={copyClabe} />}
       </section>
       <OrderSummary />
     </div>
@@ -77,6 +97,7 @@ function MobileSummary() { return <details className="border-b border-border bg-
 function OrderSummary() { return <aside className="hidden border-l border-border bg-background px-10 py-12 lg:block"><div className="sticky top-8 flex flex-col gap-6"><ProductRow /><Totals /><div className="flex flex-col gap-3 text-xs text-muted-foreground"><span className="flex items-center gap-2"><Check className="size-4 text-primary" /> Envío rastreado y asegurado</span><span className="flex items-center gap-2"><Check className="size-4 text-primary" /> Garantía de devolución de 30 días</span><span className="flex items-center gap-2"><Check className="size-4 text-primary" /> Compra protegida y pago seguro</span></div></div></aside> }
 function ProductRow() { return <div className="flex items-center gap-4"><div className="relative size-20 shrink-0 overflow-hidden rounded-lg border border-border bg-card"><img src="/images/betacab.webp" alt="Carro de herramientas profesional BetaCab en color naranja y negro" className="size-full object-cover" /><span className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-full bg-foreground text-xs text-card">1</span></div><div className="min-w-0 flex-1"><p className="font-medium text-pretty">BetaCab — Carro profesional para herramientas</p><p className="text-sm text-muted-foreground">Con ruedas · Kit completo de 333 piezas</p></div><span className="text-sm font-medium">$419.00</span></div> }
 function Totals() { return <div className="flex flex-col gap-3 border-t border-border pt-5 text-sm"><div className="flex justify-between"><span>Subtotal</span><span>$419.00</span></div><div className="flex justify-between"><span>Envío con rastreo</span><span className="font-medium text-primary">Gratis</span></div><div className="flex items-end justify-between border-t border-border pt-5"><strong className="text-base">Total</strong><div className="flex items-baseline gap-2"><span className="text-xs text-muted-foreground">MXN</span><strong className="text-2xl">$419.00</strong></div></div></div> }
-function PaymentDetails({ payment, copied, copyClabe }: { payment: Payment; copied: boolean; copyClabe: () => void }) { return <div className="flex flex-col gap-6" aria-live="polite"><p className="text-sm text-muted-foreground">Información / <span className="text-foreground">Pago</span></p><div><h1 className="text-2xl font-semibold">Completa tu transferencia</h1><p className="mt-2 text-sm text-muted-foreground">Transfiere exactamente MXN $419.00 usando los datos siguientes.</p></div><div className="rounded-lg border border-border p-5 text-center"><p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">CLABE</p><p className="mt-3 break-all font-mono text-xl font-semibold tracking-wider">{payment.clabe}</p><Button type="button" variant="outline" onClick={copyClabe} className="mt-5 w-full"><Clipboard />{copied ? 'CLABE copiada' : 'Copiar CLABE'}</Button></div><dl className="flex flex-col gap-3 rounded-lg bg-background p-5 text-sm"><Row label="Monto exacto" value="MXN $419.00" />{payment.beneficiary && <Row label="Beneficiario" value={payment.beneficiary} />}{payment.reference && <Row label="Referencia" value={payment.reference} />}</dl><div className="rounded-lg border border-border p-4"><p className="font-medium">{['PAID','APPROVED'].includes(payment.status.toUpperCase()) ? 'Pago confirmado' : 'Esperando transferencia'}</p><p className="mt-1 text-sm text-muted-foreground">Actualizaremos esta página automáticamente.</p></div>{payment.traceId && <p className="text-xs text-muted-foreground">ID de soporte: {payment.traceId}</p>}</div> }
+function PaymentDetails({ payment, copied, copyError, copyClabe }: { payment: Payment; copied: boolean; copyError: boolean; copyClabe: () => void }) { return <div className="flex flex-col gap-6" aria-live="polite"><p className="text-sm text-muted-foreground">Información / <span className="text-foreground">Pago</span></p><div><h1 className="text-2xl font-semibold text-balance">Completa tu transferencia SPEI</h1><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Abre la aplicación de tu banco y transfiere exactamente <strong className="text-foreground">MXN $419.00</strong> a la CLABE indicada.</p></div><div className="overflow-hidden rounded-xl border border-border bg-background"><div className="p-5 text-center"><p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">CLABE interbancaria</p><p className="mt-3 select-all break-all font-mono text-xl font-semibold tracking-wider text-foreground">{payment.clabe}</p></div><Button type="button" onClick={copyClabe} className="h-14 w-full rounded-none text-base font-semibold">{copied ? <Check data-icon="inline-start" /> : <Clipboard data-icon="inline-start" />}{copied ? 'CLABE copiada' : 'Copiar CLABE'}</Button></div>{copyError && <p role="alert" className="text-sm text-destructive">No pudimos copiarla automáticamente. Mantén presionado el número para copiarlo.</p>}<section className="flex flex-col gap-4"><h2 className="text-lg font-semibold">¿Cómo pagar?</h2><ol className="flex flex-col gap-4"><PaymentStep number="1" title="Copia la CLABE" description="Toca el botón de arriba para copiar los 18 dígitos." /><PaymentStep number="2" title="Abre la app de tu banco" description="Elige Transferir, SPEI o Nueva transferencia y pega la CLABE." /><PaymentStep number="3" title="Envía exactamente MXN $419.00" description="Confirma la operación y vuelve aquí. Detectaremos tu pago automáticamente." /></ol></section><dl className="flex flex-col gap-3 rounded-lg bg-background p-5 text-sm"><Row label="Monto exacto" value="MXN $419.00" />{payment.beneficiary && <Row label="Beneficiario" value={payment.beneficiary} />}{payment.reference && <Row label="Referencia" value={payment.reference} />}</dl><div className="rounded-lg border border-border p-4"><p className="font-medium">{['PAID','APPROVED'].includes(payment.status.toUpperCase()) ? 'Pago confirmado' : 'Esperando transferencia'}</p><p className="mt-1 text-sm text-muted-foreground">No cierres esta página. El estado se actualizará automáticamente.</p></div>{payment.traceId && <p className="text-xs text-muted-foreground">ID de soporte: {payment.traceId}</p>}</div> }
+function PaymentStep({ number, title, description }: { number: string; title: string; description: string }) { return <li className="flex gap-3"><span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-primary">{number}</span><div><p className="font-medium">{title}</p><p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p></div></li> }
 function Row({ label, value }: { label: string; value: string }) { return <div className="flex justify-between gap-4"><dt className="text-muted-foreground">{label}</dt><dd className="text-right font-medium">{value}</dd></div> }
 function FooterLinks() { return <nav aria-label="Políticas" className="flex flex-wrap gap-x-5 gap-y-2 border-t border-border pt-5 text-xs text-primary"><a href="#">Política de reembolso</a><a href="#">Privacidad</a><a href="#">Términos</a></nav> }
