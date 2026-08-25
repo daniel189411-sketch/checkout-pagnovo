@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     const { response, data, traceId } = await pagnovo('/transactions/v2/purchase', {
       method: 'POST',
       body: JSON.stringify({
-        amount: 419,
+        amount: 41900,
         currency: 'MXN',
         paymentMethod: 'SPEI',
         externalId: `mxn-419-${orderId}`,
