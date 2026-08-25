@@ -26,8 +26,12 @@ export function Checkout() {
     const timer = window.setInterval(async () => {
       const response = await fetch(`/api/pagnovo/status?id=${encodeURIComponent(payment.id)}`, { cache: 'no-store' })
       if (response.ok) {
-        const next = (await response.json()) as Payment
-        setPayment((current) => current ? { ...current, ...next } : current)
+        const next = (await response.json()) as Partial<Payment>
+        setPayment((current) => current ? {
+          ...current,
+          ...next,
+          clabe: next.clabe?.trim() || current.clabe,
+        } : current)
       }
     }, 5000)
     return () => window.clearInterval(timer)
