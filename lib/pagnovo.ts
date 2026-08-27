@@ -2,9 +2,9 @@ import 'server-only'
 
 const API_URL = process.env.PAGNOVO_API_URL ?? 'https://api.pagnovo.com'
 
-export async function pagnovo(path: string, init?: RequestInit) {
-  const secret = process.env.PAGNOVO_SECRET_KEY
-  if (!secret) throw new Error('PAGNOVO_SECRET_KEY não configurada')
+export async function pagnovo(path: string, init?: RequestInit, secretKey: 'PAGNOVO_SECRET_KEY' | 'PAGNOVO_SECRET_KEY_2' = 'PAGNOVO_SECRET_KEY') {
+  const secret = process.env[secretKey]
+  if (!secret) throw new Error(`${secretKey} não configurada`)
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 15000)
   try {
