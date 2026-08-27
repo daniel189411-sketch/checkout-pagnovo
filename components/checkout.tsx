@@ -3,12 +3,12 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { Check, Clipboard, LockKeyhole, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { trackPurchase } from '@/components/meta-pixel'
+import { trackInitiateCheckout, trackPurchase } from '@/components/meta-pixel'
 
 type Payment = { id: string; status: string; clabe: string; beneficiary?: string; reference?: string; traceId?: string }
 const finished = new Set(['PAID', 'APPROVED', 'REJECTED', 'REFUNDED', 'CANCELED', 'EXPIRED'])
 
-export function Checkout({ apiBase = '/api/pagnovo', amount = 419, metaTracking = false }: { apiBase?: string; amount?: number; metaTracking?: boolean }) {
+export function Checkout({ apiBase = '/api/pagnovo', amount = 419, metaTracking = false, trackCheckout = false }: { apiBase?: string; amount?: number; metaTracking?: boolean; trackCheckout?: boolean }) {
   const price = amount.toFixed(2)
   const [payment, setPayment] = useState<Payment | null>(null)
   const [loading, setLoading] = useState(false)
@@ -42,6 +42,7 @@ export function Checkout({ apiBase = '/api/pagnovo', amount = 419, metaTracking 
     event.preventDefault(); setError(''); setLoading(true)
     const form = new FormData(event.currentTarget)
     const orderId = crypto.randomUUID()
+    if (trackCheckout) trackInitiateCheckout(orderId, amount)
     try {
       const response = await fetch(`${apiBase}/create`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': orderId }, body: JSON.stringify({ name: form.get('name'), email: form.get('email'), phone: form.get('phone'), document: form.get('document'), orderId }) })
       const body = await response.json()

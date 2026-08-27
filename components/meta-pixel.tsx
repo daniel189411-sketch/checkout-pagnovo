@@ -18,6 +18,11 @@ declare global {
   }
 }
 
+export function trackInitiateCheckout(eventId: string, value: number) {
+  if (typeof window === 'undefined' || !window.fbq) return
+  window.fbq('track', 'InitiateCheckout', { value, currency: 'MXN', content_ids: ['betacab-333'], content_type: 'product', num_items: 1 }, { eventID: eventId })
+}
+
 export function trackPurchase(transactionId: string, value: number) {
   if (typeof window === 'undefined' || !window.fbq) return
   const storageKey = `meta-purchase-${transactionId}`

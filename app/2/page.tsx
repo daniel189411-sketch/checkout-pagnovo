@@ -1,5 +1,6 @@
 import { Checkout } from '@/components/checkout'
+import { MetaPixel } from '@/components/meta-pixel'
 
 export default function Page() {
-  return <Checkout apiBase="/api/pagnovo-2" />
+  return <><MetaPixel /><Checkout apiBase="/api/pagnovo-2" trackCheckout /></>
 }
