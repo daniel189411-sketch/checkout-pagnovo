@@ -8,7 +8,7 @@ import { trackPurchase } from '@/components/meta-pixel'
 type Payment = { id: string; status: string; clabe: string; beneficiary?: string; reference?: string; traceId?: string }
 const finished = new Set(['PAID', 'APPROVED', 'REJECTED', 'REFUNDED', 'CANCELED', 'EXPIRED'])
 
-export function Checkout({ apiBase = '/api/pagnovo', amount = 419 }: { apiBase?: string; amount?: number }) {
+export function Checkout({ apiBase = '/api/pagnovo', amount = 419, metaTracking = false }: { apiBase?: string; amount?: number; metaTracking?: boolean }) {
   const price = amount.toFixed(2)
   const [payment, setPayment] = useState<Payment | null>(null)
   const [loading, setLoading] = useState(false)
@@ -17,10 +17,10 @@ export function Checkout({ apiBase = '/api/pagnovo', amount = 419 }: { apiBase?:
   const [copyError, setCopyError] = useState(false)
 
   useEffect(() => {
-    if (payment && ['PAID', 'APPROVED'].includes(payment.status.toUpperCase())) {
-      trackPurchase(payment.id)
+    if (metaTracking && payment && ['PAID', 'APPROVED'].includes(payment.status.toUpperCase())) {
+      trackPurchase(payment.id, amount)
     }
-  }, [payment?.id, payment?.status])
+  }, [amount, metaTracking, payment?.id, payment?.status])
 
   useEffect(() => {
     if (!payment || finished.has(payment.status.toUpperCase())) return
