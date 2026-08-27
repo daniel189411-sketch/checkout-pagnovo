@@ -8,7 +8,7 @@ import { trackPurchase } from '@/components/meta-pixel'
 type Payment = { id: string; status: string; clabe: string; beneficiary?: string; reference?: string; traceId?: string }
 const finished = new Set(['PAID', 'APPROVED', 'REJECTED', 'REFUNDED', 'CANCELED', 'EXPIRED'])
 
-export function Checkout() {
+export function Checkout({ apiBase = '/api/pagnovo' }: { apiBase?: string }) {
   const [payment, setPayment] = useState<Payment | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -24,7 +24,7 @@ export function Checkout() {
   useEffect(() => {
     if (!payment || finished.has(payment.status.toUpperCase())) return
     const timer = window.setInterval(async () => {
-      const response = await fetch(`/api/pagnovo/status?id=${encodeURIComponent(payment.id)}`, { cache: 'no-store' })
+      const response = await fetch(`${apiBase}/status?id=${encodeURIComponent(payment.id)}`, { cache: 'no-store' })
       if (response.ok) {
         const next = (await response.json()) as Partial<Payment>
         setPayment((current) => current ? {
@@ -35,14 +35,14 @@ export function Checkout() {
       }
     }, 5000)
     return () => window.clearInterval(timer)
-  }, [payment?.id, payment?.status])
+  }, [apiBase, payment?.id, payment?.status])
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError(''); setLoading(true)
     const form = new FormData(event.currentTarget)
     const orderId = crypto.randomUUID()
     try {
-      const response = await fetch('/api/pagnovo/create', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': orderId }, body: JSON.stringify({ name: form.get('name'), email: form.get('email'), phone: form.get('phone'), document: form.get('document'), orderId }) })
+      const response = await fetch(`${apiBase}/create`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': orderId }, body: JSON.stringify({ name: form.get('name'), email: form.get('email'), phone: form.get('phone'), document: form.get('document'), orderId }) })
       const body = await response.json()
       if (!response.ok) throw new Error(body.message || 'No fue posible iniciar el pago.')
       setPayment(body)
