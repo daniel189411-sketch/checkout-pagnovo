@@ -19,10 +19,10 @@ export async function POST(request: Request) {
     const { response, data, traceId } = await pagnovo('/transactions/v2/purchase', {
       method: 'POST',
       body: JSON.stringify({
-        amount: 41900,
+        amount: 40000,
         currency: 'MXN',
         paymentMethod: 'SPEI',
-        externalId: `mxn-419-${orderId}`,
+        externalId: `mxn-400-${orderId}`,
         name,
         email,
         description: 'BetaCab - carro profesional con kit de 333 herramientas',
